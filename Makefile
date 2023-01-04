@@ -1,0 +1,9 @@
+.PHONY: fmt check
+
+fmt:
+	@go mod tidy
+	@go fmt ./...
+
+check:
+	@go vet ./...
+	@go test -v ./...
