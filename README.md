@@ -12,8 +12,8 @@ By forking it, we can import it as a standlone package and introduce custom chan
 
 Below is a list of changes we made to the upstream package:
 
-- [ ] replace the use of [`tfdiags`](https://github.com/hashicorp/terraform/tree/main/internal/tfdiags) with `error`
-- [ ] replace the 
+- [x] replace the use of [`tfdiags`](https://github.com/hashicorp/terraform/tree/main/internal/tfdiags) with `error`
+- [ ] remove logging
 
 ## Usage
 

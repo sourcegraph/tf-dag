@@ -9,8 +9,6 @@ import (
 	"strings"
 	"sync"
 	"testing"
-
-	"github.com/sourcegraph/tf-dag/tfdiags"
 )
 
 func TestMain(m *testing.M) {
@@ -295,7 +293,7 @@ func TestAcyclicGraphWalk(t *testing.T) {
 
 	var visits []Vertex
 	var lock sync.Mutex
-	err := g.Walk(func(v Vertex) tfdiags.Diagnostics {
+	err := g.Walk(func(v Vertex) error {
 		lock.Lock()
 		defer lock.Unlock()
 		visits = append(visits, v)
@@ -330,19 +328,16 @@ func TestAcyclicGraphWalk_error(t *testing.T) {
 
 	var visits []Vertex
 	var lock sync.Mutex
-	err := g.Walk(func(v Vertex) tfdiags.Diagnostics {
+	err := g.Walk(func(v Vertex) error {
 		lock.Lock()
 		defer lock.Unlock()
 
-		var diags tfdiags.Diagnostics
-
 		if v == 2 {
-			diags = diags.Append(fmt.Errorf("error"))
-			return diags
+			return fmt.Errorf("error")
 		}
 
 		visits = append(visits, v)
-		return diags
+		return nil
 	})
 	if err == nil {
 		t.Fatal("should error")
