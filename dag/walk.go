@@ -1,7 +1,6 @@
 package dag
 
 import (
-	"log"
 	"sync"
 	"time"
 
@@ -379,7 +378,8 @@ func (w *Walker) walkVertex(v Vertex, info *walkerVertex) {
 	if depsSuccess {
 		err = errors.Append(err, w.Callback(v))
 	} else {
-		log.Printf("[TRACE] dag/walk: upstream of %q errored, so skipping", VertexName(v))
+		// TODO(@michaellzc): consider implementing otel tracing in the future
+		// log.Printf("[TRACE] dag/walk: upstream of %q errored, so skipping", VertexName(v))
 		// This won't be displayed to the user because we'll set upstreamFailed,
 		// but we need to ensure there's at least one error in here so that
 		// the failures will cascade downstream.
@@ -410,7 +410,7 @@ func (w *Walker) waitDeps(
 	cancelCh <-chan struct{}) {
 
 	// For each dependency given to us, wait for it to complete
-	for dep, depCh := range deps {
+	for _, depCh := range deps {
 	DepSatisfied:
 		for {
 			select {
@@ -425,8 +425,9 @@ func (w *Walker) waitDeps(
 				return
 
 			case <-time.After(time.Second * 5):
-				log.Printf("[TRACE] dag/walk: vertex %q is waiting for %q",
-					VertexName(v), VertexName(dep))
+				// TODO(@michaellzc): consider implementing otel tracing in the future
+				// log.Printf("[TRACE] dag/walk: vertex %q is waiting for %q",
+				// 	VertexName(v), VertexName(dep))
 			}
 		}
 	}
