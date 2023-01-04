@@ -5,9 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/sourcegraph/tf-dag/tfdiags"
-
-	"github.com/hashicorp/go-multierror"
+	"github.com/sourcegraph/sourcegraph/lib/errors"
 )
 
 // AcyclicGraph is a specialization of Graph that cannot have cycles.
@@ -16,7 +14,9 @@ type AcyclicGraph struct {
 }
 
 // WalkFunc is the callback used for walking the graph.
-type WalkFunc func(Vertex) tfdiags.Diagnostics
+// The return error could be a "bag of errors", learn more from
+// https://docs.sourcegraph.com/dev/background-information/languages/go_errors#use-of-errors-multierror
+type WalkFunc func(Vertex) error
 
 // DepthWalkFunc is a walk function that also receives the current depth of the
 // walk as an argument
@@ -119,7 +119,7 @@ func (g *AcyclicGraph) Validate() error {
 	}
 
 	// Look for cycles of more than 1 component
-	var err error
+	var err errors.MultiError
 	cycles := g.Cycles()
 	if len(cycles) > 0 {
 		for _, cycle := range cycles {
@@ -128,7 +128,7 @@ func (g *AcyclicGraph) Validate() error {
 				cycleStr[j] = VertexName(vertex)
 			}
 
-			err = multierror.Append(err, fmt.Errorf(
+			err = errors.Append(err, fmt.Errorf(
 				"Cycle: %s", strings.Join(cycleStr, ", ")))
 		}
 	}
@@ -136,7 +136,7 @@ func (g *AcyclicGraph) Validate() error {
 	// Look for cycles to self
 	for _, e := range g.Edges() {
 		if e.Source() == e.Target() {
-			err = multierror.Append(err, fmt.Errorf(
+			err = errors.Append(err, fmt.Errorf(
 				"Self reference: %s", VertexName(e.Source())))
 		}
 	}
@@ -159,7 +159,7 @@ func (g *AcyclicGraph) Cycles() [][]Vertex {
 // Walk walks the graph, calling your callback as each node is visited.
 // This will walk nodes in parallel if it can. The resulting diagnostics
 // contains problems from all graphs visited, in no particular order.
-func (g *AcyclicGraph) Walk(cb WalkFunc) tfdiags.Diagnostics {
+func (g *AcyclicGraph) Walk(cb WalkFunc) error {
 	w := &Walker{Callback: cb, Reverse: true}
 	w.Update(g)
 	return w.Wait()
