@@ -373,17 +373,17 @@ func (w *Walker) walkVertex(v Vertex, info *walkerVertex) {
 	}
 
 	// Run our callback or note that our upstream failed
-	var err errors.MultiError
+	var err error
 	var upstreamFailed bool
 	if depsSuccess {
-		err = errors.Append(err, w.Callback(v))
+		err = w.Callback(v)
 	} else {
 		// TODO(@michaellzc): consider implementing otel tracing in the future
 		// log.Printf("[TRACE] dag/walk: upstream of %q errored, so skipping", VertexName(v))
 		// This won't be displayed to the user because we'll set upstreamFailed,
 		// but we need to ensure there's at least one error in here so that
 		// the failures will cascade downstream.
-		err = errors.Append(err, errors.New("upstream dependencies failed"))
+		err = errors.New("upstream dependencies failed")
 		upstreamFailed = true
 	}
 
