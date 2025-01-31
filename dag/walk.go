@@ -1,10 +1,9 @@
 package dag
 
 import (
+	"errors"
 	"sync"
 	"time"
-
-	"github.com/sourcegraph/sourcegraph/lib/errors"
 )
 
 // Walker is used to walk every vertex of a graph in parallel.
@@ -115,7 +114,7 @@ func (w *Walker) Wait() error {
 	// Wait for completion
 	w.wait.Wait()
 
-	var err errors.MultiError
+	var err error
 	w.diagsLock.Lock()
 	for v, vErrs := range w.errorsMap {
 		if _, upstream := w.upstreamFailed[v]; upstream {
@@ -123,7 +122,7 @@ func (w *Walker) Wait() error {
 			// the downstream diagnostics are likely to be redundant.
 			continue
 		}
-		err = errors.Append(err, vErrs)
+		err = errors.Join(err, vErrs)
 	}
 	w.diagsLock.Unlock()
 

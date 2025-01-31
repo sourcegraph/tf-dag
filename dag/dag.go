@@ -1,11 +1,10 @@
 package dag
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
-
-	"github.com/sourcegraph/sourcegraph/lib/errors"
 )
 
 // AcyclicGraph is a specialization of Graph that cannot have cycles.
@@ -119,7 +118,7 @@ func (g *AcyclicGraph) Validate() error {
 	}
 
 	// Look for cycles of more than 1 component
-	var err errors.MultiError
+	var err error
 	cycles := g.Cycles()
 	if len(cycles) > 0 {
 		for _, cycle := range cycles {
@@ -128,7 +127,7 @@ func (g *AcyclicGraph) Validate() error {
 				cycleStr[j] = VertexName(vertex)
 			}
 
-			err = errors.Append(err, fmt.Errorf(
+			err = errors.Join(err, fmt.Errorf(
 				"Cycle: %s", strings.Join(cycleStr, ", ")))
 		}
 	}
@@ -136,7 +135,7 @@ func (g *AcyclicGraph) Validate() error {
 	// Look for cycles to self
 	for _, e := range g.Edges() {
 		if e.Source() == e.Target() {
-			err = errors.Append(err, fmt.Errorf(
+			err = errors.Join(err, fmt.Errorf(
 				"Self reference: %s", VertexName(e.Source())))
 		}
 	}
