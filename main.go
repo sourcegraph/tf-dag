@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/sourcegraph/sourcegraph/lib/errors"
 	"github.com/sourcegraph/tf-dag/dag"
 )
 
@@ -18,8 +17,7 @@ func main() {
 
 	g = buildGraph()
 	if err := g.Walk(func(v dag.Vertex) error {
-		fmt.Printf("visiting %d\n", v)
-		return errors.Newf("error walking: %d", v)
+		return fmt.Errorf("error walking: %d", v)
 	}); err != nil {
 		fmt.Printf("error walking dag: %s", err.Error())
 	}
