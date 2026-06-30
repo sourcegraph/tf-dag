@@ -3,6 +3,7 @@ package dag
 import (
 	"bytes"
 	"fmt"
+	"maps"
 	"sort"
 	"strings"
 )
@@ -95,12 +96,8 @@ func (v *marshalVertex) dot(g *marshalGraph, opts *DotOpts) []byte {
 		}
 
 		newAttrs := make(map[string]string)
-		for k, v := range attrs {
-			newAttrs[k] = v
-		}
-		for k, v := range node.Attrs {
-			newAttrs[k] = v
-		}
+		maps.Copy(newAttrs, attrs)
+		maps.Copy(newAttrs, node.Attrs)
 
 		name = node.Name
 		attrs = newAttrs
