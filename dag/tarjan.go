@@ -1,5 +1,7 @@
 package dag
 
+import "slices"
+
 // StronglyConnected returns the list of strongly connected components
 // within the Graph g. This information is primarily used by this package
 // for cycle detection, but strongly connected components have widespread
@@ -55,13 +57,6 @@ func stronglyConnected(acct *sccAcct, g *Graph, v Vertex) int {
 	return minIdx
 }
 
-func min(a, b int) int {
-	if a <= b {
-		return a
-	}
-	return b
-}
-
 // sccAcct is used ot pass around accounting information for
 // the StronglyConnectedComponents algorithm
 type sccAcct struct {
@@ -98,10 +93,5 @@ func (s *sccAcct) pop() Vertex {
 
 // inStack checks if a vertex is in the stack
 func (s *sccAcct) inStack(needle Vertex) bool {
-	for _, n := range s.Stack {
-		if n == needle {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(s.Stack, needle)
 }
